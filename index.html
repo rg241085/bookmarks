@@ -410,6 +410,8 @@
             }
         }
 
+        // ... [बाकी कोड] ...
+
         function initSortable(bookmarksArray) {
             if (sortableInstance) {
                 sortableInstance.destroy();
@@ -420,6 +422,16 @@
                     animation: 150,
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
+                    
+                    // 1. **मुख्य फ़िक्स: ड्रैग से पहले देरी (delay)**
+                    // मोबाइल स्क्रॉल को ड्रैग से अलग करने के लिए 200ms की देरी।
+                    delay: 200, 
+                    touchStartThreshold: 5, // संवेदनशीलता को भी नियंत्रित करता है
+                    
+                    // 2. फ़िल्टर: बटन को ड्रैग करने से बाहर रखें
+                    filter: '.edit-btn, .delete-btn', 
+                    preventOnFilter: true, // फ़िल्टर किए गए तत्वों पर क्लिक/टच को रोकें
+
                     onEnd: function (evt) {
                         // UPDATE ORDER IN FIREBASE
                         updateFirebaseOrder(evt.oldIndex, evt.newIndex, bookmarksArray);
@@ -429,6 +441,8 @@
                 sortableInstance = null;
             }
         }
+
+// ... [बाकी कोड] ...
 
         function updateFirebaseOrder(oldIndex, newIndex, bookmarksArray) {
             const tempBookmarks = [...bookmarksArray];
@@ -622,3 +636,4 @@
 </body>
 
 </html>
+
