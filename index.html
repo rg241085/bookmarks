@@ -410,36 +410,19 @@
             }
         }
 
-        // ... [बाकी कोड] ...
+       // ... [बाकी कोड] ...
 
         function initSortable(bookmarksArray) {
+            // हम SortableJS को केवल तभी initialize करेंगे जब हमें ड्रैग-एंड-ड्रॉप की जरूरत हो।
+            // फ़ोनबुक जैसे स्क्रॉल के लिए, हम इसे हटा रहे हैं ताकि स्क्रॉलिंग हमेशा प्राथमिकता ले।
+            
             if (sortableInstance) {
                 sortableInstance.destroy();
+                sortableInstance = null; // SortableJS को पूरी तरह हटा दें
             }
-            
-            if (bookmarkGrid.children.length > 0 && bookmarkGrid.children[0].className === 'bookmark-card') {
-                sortableInstance = new Sortable(bookmarkGrid, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    
-                    // 1. **मुख्य फ़िक्स: ड्रैग से पहले देरी (delay)**
-                    // मोबाइल स्क्रॉल को ड्रैग से अलग करने के लिए 200ms की देरी।
-                    delay: 200, 
-                    touchStartThreshold: 5, // संवेदनशीलता को भी नियंत्रित करता है
-                    
-                    // 2. फ़िल्टर: बटन को ड्रैग करने से बाहर रखें
-                    filter: '.edit-btn, .delete-btn', 
-                    preventOnFilter: true, // फ़िल्टर किए गए तत्वों पर क्लिक/टच को रोकें
 
-                    onEnd: function (evt) {
-                        // UPDATE ORDER IN FIREBASE
-                        updateFirebaseOrder(evt.oldIndex, evt.newIndex, bookmarksArray);
-                    }
-                });
-            } else {
-                sortableInstance = null;
-            }
+            // ध्यान दें: अब इस फ़ंक्शन के अंदर कोई Sortable(bookmarkGrid, ...) कॉल नहीं है।
+            // इसका मतलब है कि ड्रैग-एंड-ड्रॉप सुविधा अब मौजूद नहीं है।
         }
 
 // ... [बाकी कोड] ...
@@ -636,4 +619,5 @@
 </body>
 
 </html>
+
 
