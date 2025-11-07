@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Favorite Websites</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
-    
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <style>
         /* -------------------------------------- */
         /* GLOBAL RESET AND FONT */
@@ -31,22 +31,67 @@
             --light-bg: #f5f5f5;
             --dark-text: #111b21;
             --light-text: #667781;
+            --google-blue: #4285F4;
+            /* Added for login */
         }
 
         body {
-            background-color: var(--light-bg); 
-            /* Fix: Changed min-height from 100vh to ensure proper scrolling */
-            min-height: 100%; 
+            background-color: var(--light-bg);
+            min-height: 100%;
             padding: 40px 20px;
-            color: var(--dark-text); 
+            color: var(--dark-text);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             position: relative;
-            /* Added min-height for better layout */
-            min-height: 85vh; 
+            min-height: 85vh;
+        }
+
+        /* -------------------------------------- */
+        /* NEW: AUTH CONTAINER STYLES */
+        /* -------------------------------------- */
+        .auth-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        #auth-status {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark-text);
+            display: none;
+            /* Hidden by default */
+        }
+
+        #auth-status #user-name {
+            color: var(--whatsapp-green);
+            font-weight: 600;
+        }
+
+        #login-btn,
+        #logout-btn {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        #login-btn {
+            background: var(--google-blue);
+        }
+
+        #logout-btn {
+            background: #dc3545;
+            /* Red for logout */
+            display: none;
+            /* Hidden by default */
         }
 
         /* -------------------------------------- */
@@ -81,16 +126,18 @@
         /* FORM STYLES */
         /* -------------------------------------- */
         .form-container {
-            background: #ffffff; 
+            background: #ffffff;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
-            border: 1px solid #e0e4e7; 
+            border: 1px solid #e0e4e7;
             display: none;
         }
 
-        .form-group { margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
         label {
             display: block;
@@ -99,7 +146,8 @@
             margin-bottom: 8px;
         }
 
-        input[type="text"], input[type="url"] {
+        input[type="text"],
+        input[type="url"] {
             width: 100%;
             padding: 14px;
             border: 1px solid #dcdcdc;
@@ -110,8 +158,9 @@
             transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus, input[type="url"]:focus {
-            border-color: var(--whatsapp-green); 
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            border-color: var(--whatsapp-green);
             box-shadow: 0 0 0 1px var(--whatsapp-green);
             outline: none;
         }
@@ -133,14 +182,23 @@
             font-size: 16px;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            /* Box-shadow removed from base, added to login/logout */
         }
 
-        #submit-btn { background: var(--whatsapp-green); }
-        .cancel-btn { background: var(--light-text); }
+        #submit-btn {
+            background: var(--whatsapp-green);
+        }
+
+        .cancel-btn {
+            background: var(--light-text);
+        }
 
         button:hover {
             transform: translateY(-1px);
+        }
+
+        #submit-btn:hover,
+        .cancel-btn:hover {
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
@@ -152,14 +210,17 @@
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            background: var(--whatsapp-green); 
+            background: var(--whatsapp-green);
             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5);
             font-size: 35px;
             display: flex;
+            /* Changed from 'flex' */
             align-items: center;
             justify-content: center;
             color: white;
             z-index: 100;
+            display: none;
+            /* HIDDEN BY DEFAULT */
         }
 
         .add-btn:hover {
@@ -171,16 +232,16 @@
         /* -------------------------------------- */
         .bookmark-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 30px;
             min-height: 200px;
         }
 
         .bookmark-card {
-            background-color: #ffffff; 
-            border-radius: 12px; 
+            background-color: #ffffff;
+            border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02); 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
             transition: all 0.3s ease-in-out;
             border: 1px solid #e0e4e7;
             position: relative;
@@ -189,12 +250,13 @@
             justify-content: space-between;
             cursor: grab;
         }
-        
+
         /* Dragging state */
         .bookmark-card.sortable-chosen {
             opacity: 0.8;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
+
         .bookmark-card.sortable-ghost {
             opacity: 0.2;
         }
@@ -202,19 +264,25 @@
 
         .bookmark-card:hover {
             background-color: var(--whatsapp-green);
-            color: #ffffff; 
+            color: #ffffff;
             transform: none;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
             border-color: var(--whatsapp-green);
         }
-        
+
         /* Card Content Styles */
-        .bookmark-card:hover .bookmark-title { color: #ffffff; }
-        .bookmark-card:hover .bookmark-url { color: rgba(255, 255, 255, 0.8); }
+        .bookmark-card:hover .bookmark-title {
+            color: #ffffff;
+        }
+
+        .bookmark-card:hover .bookmark-url {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
         .bookmark-card:hover .edit-btn,
         .bookmark-card:hover .delete-btn {
             background-color: rgba(255, 255, 255, 0.1);
-            color: #ffffff; 
+            color: #ffffff;
             border-color: rgba(255, 255, 255, 0.4);
         }
 
@@ -242,7 +310,7 @@
             color: var(--dark-text);
             transition: color 0.3s;
             word-break: break-word;
-            text-transform: none; 
+            text-transform: none;
             line-height: 1.2;
         }
 
@@ -251,7 +319,7 @@
             font-size: 0.9rem;
             margin-bottom: 20px;
             word-break: break-all;
-            font-style: italic; 
+            font-style: italic;
             transition: color 0.3s;
         }
 
@@ -263,7 +331,7 @@
             padding-top: 10px;
             z-index: 10;
         }
-        
+
         /* ACTION BUTTONS */
         .edit-btn,
         .delete-btn {
@@ -272,7 +340,7 @@
             font-weight: 500;
             border-radius: 6px;
             box-shadow: none;
-            background-color: transparent; 
+            background-color: transparent;
             border: 1px solid var(--whatsapp-green);
             color: var(--whatsapp-green);
             transition: all 0.3s;
@@ -282,10 +350,10 @@
             border-color: #dc3545;
             color: #dc3545;
         }
-        
+
         /* EMPTY STATE & NOTIFICATION */
         .empty-state {
-            background: #ffffff; 
+            background: #ffffff;
             padding: 80px 20px;
             color: var(--light-text);
             font-size: 1.1rem;
@@ -300,7 +368,7 @@
             position: fixed;
             top: 30px;
             right: 30px;
-            background-color: var(--whatsapp-green); 
+            background-color: var(--whatsapp-green);
             color: white;
             padding: 15px 30px;
             border-radius: 10px;
@@ -310,13 +378,19 @@
         }
 
         .notification.error {
-            background-color: #dc3545; 
+            background-color: #dc3545;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
+
+        <div class="auth-container">
+            <div id="auth-status">Welcome, <span id="user-name"></span></div>
+            <button id="login-btn">Sign in with Google</button>
+            <button id="logout-btn">Logout</button>
+        </div>
 
         <h1>My Favorite Websites</h1>
 
@@ -341,7 +415,7 @@
         </div>
 
         <div class="bookmark-grid" id="bookmark-grid">
-            <div class="empty-state">
+            <div class="empty-state" id="empty-state-message">
                 Loading bookmarks...
             </div>
         </div>
@@ -363,8 +437,21 @@
         const bookmarkGrid = document.getElementById('bookmark-grid');
         const addBtn = document.getElementById('add-btn');
         const notification = document.getElementById('notification');
-        
+        const emptyStateMessage = document.getElementById('empty-state-message');
+
+        // 3. NEW: Auth elements
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authStatus = document.getElementById('auth-status');
+        const userName = document.getElementById('user-name');
+
         let sortableInstance = null;
+
+        // 4. NEW: Global state variables
+        let currentUserId = null;
+        let bookmarksRef = null; // Will be set on login
+        let firebaseDataListener = null; // To store the listener
+
 
         // Text translations 
         const TEXT_SAVE_WEBSITE = 'Save Website';
@@ -376,6 +463,7 @@
         const TEXT_SUCCESS_DELETE = 'Website deleted successfully!';
         const TEXT_ERROR_DUPLICATE = 'This website is already saved!';
         const TEXT_EMPTY_STATE = 'No websites saved yet. Click the plus button below to add a website.';
+        const TEXT_LOGGED_OUT_STATE = 'Please log in to see your bookmarks.'; // New
 
         // ------------------------------------------------------------------
         // FIREBASE CONFIGURATION & INITIALIZATION (Your Config Applied)
@@ -389,14 +477,82 @@
             messagingSenderId: "804620888663",
             appId: "1:804620888663:web:04ce2c01528cfe901d5112"
         };
-        
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         // Get a reference to the database service
         const database = firebase.database();
-        // Set the main reference path for bookmarks
-        const bookmarksRef = database.ref('bookmarks'); 
-        
+        // 5. NEW: Initialize Auth
+        const auth = firebase.auth();
+
+        // ------------------------------------------------------------------
+        // 6. NEW: AUTHENTICATION FUNCTIONS
+        // ------------------------------------------------------------------
+
+        // Google Sign-In
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    console.log("Logged in successfully:", result.user.displayName);
+                })
+                .catch(error => {
+                    console.error("Login failed:", error);
+                });
+        }
+
+        // Logout
+        function logOut() {
+            auth.signOut()
+                .then(() => {
+                    console.log("Logged out successfully.");
+                })
+                .catch(error => {
+                    console.error("Logout failed:", error);
+                });
+        }
+
+        // Auth State Change Listener (The main controller)
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // --- User is LOGGED IN ---
+                currentUserId = user.uid;
+
+                // 7. Set the secure, user-specific database path
+                bookmarksRef = database.ref('users/' + currentUserId + '/bookmarks');
+
+                // Update UI
+                userName.textContent = user.displayName;
+                authStatus.style.display = 'block';
+                logoutBtn.style.display = 'block';
+                loginBtn.style.display = 'none';
+                addBtn.style.display = 'flex'; // Show the add button
+
+                // Start listening for data
+                listenForData();
+
+            } else {
+                // --- User is LOGGED OUT ---
+                currentUserId = null;
+
+                // 8. Stop listening to old data
+                if (bookmarksRef && firebaseDataListener) {
+                    bookmarksRef.off('value', firebaseDataListener);
+                }
+                bookmarksRef = null;
+
+                // Update UI
+                authStatus.style.display = 'none';
+                logoutBtn.style.display = 'none';
+                loginBtn.style.display = 'block';
+                addBtn.style.display = 'none'; // Hide the add button
+                formContainer.style.display = 'none'; // Hide form if it was open
+
+                // Clear the grid
+                renderBookmarks([]); // Pass an empty array
+            }
+        });
+
         // ------------------------------------------------------------------
         // Helper Functions (Favicon and Sortable Setup)
         // ------------------------------------------------------------------
@@ -410,24 +566,28 @@
             }
         }
 
-       // ... [बाकी कोड] ...
-
         function initSortable(bookmarksArray) {
-            // हम SortableJS को केवल तभी initialize करेंगे जब हमें ड्रैग-एंड-ड्रॉप की जरूरत हो।
-            // फ़ोनबुक जैसे स्क्रॉल के लिए, हम इसे हटा रहे हैं ताकि स्क्रॉलिंग हमेशा प्राथमिकता ले।
-            
             if (sortableInstance) {
                 sortableInstance.destroy();
-                sortableInstance = null; // SortableJS को पूरी तरह हटा दें
             }
 
-            // ध्यान दें: अब इस फ़ंक्शन के अंदर कोई Sortable(bookmarkGrid, ...) कॉल नहीं है।
-            // इसका मतलब है कि ड्रैग-एंड-ड्रॉप सुविधा अब मौजूद नहीं है।
+            // 9. NEW: Only enable sorting if there are items
+            if (bookmarksArray.length > 0) {
+                sortableInstance = Sortable.create(bookmarkGrid, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    onEnd: function (evt) {
+                        // Get the old and new index and update Firebase
+                        updateFirebaseOrder(evt.oldIndex, evt.newIndex, bookmarksArray);
+                    }
+                });
+            }
         }
 
-// ... [बाकी कोड] ...
-
         function updateFirebaseOrder(oldIndex, newIndex, bookmarksArray) {
+            if (!bookmarksRef) return; // Don't run if logged out
+
             const tempBookmarks = [...bookmarksArray];
             const [movedItem] = tempBookmarks.splice(oldIndex, 1);
             tempBookmarks.splice(newIndex, 0, movedItem);
@@ -436,7 +596,7 @@
             tempBookmarks.forEach((b, index) => {
                 updates[b.key + '/order'] = index;
             });
-            
+
             bookmarksRef.update(updates)
                 .then(() => showNotification("Order updated successfully!", 'success'))
                 .catch(error => console.error("Error updating order:", error));
@@ -452,15 +612,15 @@
             if (bookmarksArray.length === 0) {
                 const emptyStateDiv = document.createElement('div');
                 emptyStateDiv.className = 'empty-state';
-                emptyStateDiv.textContent = TEXT_EMPTY_STATE;
+                // 10. NEW: Show different message if logged out
+                emptyStateDiv.textContent = currentUserId ? TEXT_EMPTY_STATE : TEXT_LOGGED_OUT_STATE;
                 bookmarkGrid.appendChild(emptyStateDiv);
             } else {
                 bookmarksArray.forEach(bookmark => {
                     const faviconUrl = getFaviconUrl(bookmark.url);
                     const bookmarkCard = document.createElement('div');
                     bookmarkCard.className = 'bookmark-card';
-                    // Use Firebase key as data-id
-                    bookmarkCard.setAttribute('data-id', bookmark.key); 
+                    bookmarkCard.setAttribute('data-id', bookmark.key);
 
                     bookmarkCard.innerHTML = `
                         <div class="card-content">
@@ -484,8 +644,7 @@
 
                     bookmarkCard.querySelector('.edit-btn').addEventListener('click', function (e) {
                         e.stopPropagation();
-                        // Use Firebase key for update
-                        bookmarkId.value = bookmark.key; 
+                        bookmarkId.value = bookmark.key;
                         websiteName.value = bookmark.name;
                         websiteUrl.value = bookmark.url;
                         submitBtn.textContent = TEXT_UPDATE_WEBSITE;
@@ -501,41 +660,44 @@
                     bookmarkGrid.appendChild(bookmarkCard);
                 });
             }
-            
+
             // Re-initialize SortableJS
             initSortable(bookmarksArray);
         }
 
-        // Firebase Event Listener (Runs whenever data changes)
-        bookmarksRef.on('value', (snapshot) => {
-            const bookmarks = [];
-            
-            const data = snapshot.val(); 
+        // 11. NEW: Wrapped data listener in a function
+        function listenForData() {
+            if (!bookmarksRef) return; // Safety check
 
-            if (data) {
-                for (let key in data) {
-                    bookmarks.push({ key, ...data[key] });
+            // Store the listener function so we can detach it on logout
+            firebaseDataListener = bookmarksRef.on('value', (snapshot) => {
+                const bookmarks = [];
+                const data = snapshot.val();
+
+                if (data) {
+                    for (let key in data) {
+                        bookmarks.push({ key, ...data[key] });
+                    }
                 }
-            }
-            
-            // Sort bookmarks by the 'order' property
-            bookmarks.sort((a, b) => (a.order || 9999) - (b.order || 9999));
 
-            // Render the sorted data
-            renderBookmarks(bookmarks);
-        });
+                bookmarks.sort((a, b) => (a.order || 9999) - (b.order || 9999));
+                renderBookmarks(bookmarks);
+            });
+        }
+
 
         // Add a new bookmark
         function addBookmark(name, url) {
+            if (!bookmarksRef) return; // Safety check
+
             bookmarksRef.once('value').then(snapshot => {
                 const count = snapshot.numChildren();
                 const newBookmark = {
                     name,
                     url,
-                    order: count 
+                    order: count
                 };
 
-                // PUSH adds a unique ID (key)
                 bookmarksRef.push(newBookmark)
                     .then(() => showNotification(TEXT_SUCCESS_SAVE, 'success'))
                     .catch(error => console.error("Error saving bookmark:", error));
@@ -544,32 +706,29 @@
 
         // Update an existing bookmark
         function updateBookmark(key, name, url) {
-            const updates = {
-                name,
-                url
-            };
-            // Update only the specific node using the key
-            bookmarksRef.child(key).update(updates) 
+            if (!bookmarksRef) return; // Safety check
+            const updates = { name, url };
+
+            bookmarksRef.child(key).update(updates)
                 .then(() => showNotification(TEXT_SUCCESS_UPDATE, 'success'))
                 .catch(error => console.error("Error updating bookmark:", error));
         }
 
         // Delete a bookmark
         function deleteBookmark(key) {
-            // Remove the specific node using the key
-            bookmarksRef.child(key).remove() 
+            if (!bookmarksRef) return; // Safety check
+
+            bookmarksRef.child(key).remove()
                 .then(() => showNotification(TEXT_SUCCESS_DELETE, 'success'))
                 .catch(error => console.error("Error deleting bookmark:", error));
         }
 
         function showNotification(message, type = 'success') {
             notification.textContent = message;
-
             notification.classList.remove('error');
             if (type === 'error') {
                 notification.classList.add('error');
             }
-
             notification.style.display = 'block';
 
             setTimeout(() => {
@@ -581,6 +740,11 @@
         // Event Listeners 
         // ------------------------------------------------------------------
 
+        // 12. NEW: Auth button listeners
+        loginBtn.addEventListener('click', signInWithGoogle);
+        logoutBtn.addEventListener('click', logOut);
+
+
         addBtn.addEventListener('click', function () {
             formContainer.style.display = 'block';
             addBtn.style.display = 'none';
@@ -591,15 +755,25 @@
 
         cancelBtn.addEventListener('click', function () {
             formContainer.style.display = 'none';
-            addBtn.style.display = 'flex';
+            // 13. NEW: Only show addBtn if logged in
+            if (currentUserId) {
+                addBtn.style.display = 'flex';
+            }
         });
-        
+
         bookmarkForm.addEventListener('submit', function (e) {
             e.preventDefault();
+
+            // 14. NEW: Check if logged in before submitting
+            if (!currentUserId || !bookmarksRef) {
+                showNotification("Please log in to save bookmarks.", 'error');
+                return;
+            }
+
             const name = websiteName.value.trim();
             let url = websiteUrl.value.trim();
-            const key = bookmarkId.value; 
-            
+            const key = bookmarkId.value;
+
             if (name && url) {
                 if (!url.startsWith('http://') && !url.startsWith('https://')) {
                     url = 'https://' + url;
@@ -619,5 +793,3 @@
 </body>
 
 </html>
-
-
