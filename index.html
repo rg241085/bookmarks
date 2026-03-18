@@ -539,13 +539,20 @@
             }
         }
 
-        function initSortable(bookmarksArray) {
+       function initSortable(bookmarksArray) {
             if (sortableInstance) sortableInstance.destroy();
+            
             if (bookmarksArray.length > 0) {
                 sortableInstance = Sortable.create(bookmarkGrid, {
                     animation: 150,
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
+                    
+                    // ✨ SCROLLING FIX (Naya Code Yahan Hai) ✨
+                    delay: 200, // 200 milliseconds ka long-press delay
+                    delayOnTouchOnly: true, // Yeh delay sirf mobile/touch screens par lagega, laptop mouse par nahi
+                    touchStartThreshold: 3, // Agar ungli thodi si slide ho jaye toh usko scroll manega, drag nahi
+                    
                     onEnd: function (evt) {
                         updateFirebaseOrder(evt.oldIndex, evt.newIndex, bookmarksArray);
                     }
