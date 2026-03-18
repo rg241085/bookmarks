@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
     <style>
         /* -------------------------------------- */
         /* GLOBAL RESET AND FONT */
@@ -26,11 +27,8 @@
             --google-light-blue: #d3e3fd;
         }
 
-        /* 1. HORIZONTAL SCROLL FIX: Set max-width and hide overflow */
-        html, body {
-            max-width: 100vw;
-            overflow-x: hidden; 
-        }
+        /* HORIZONTAL SCROLL FIX */
+        html, body { max-width: 100vw; overflow-x: hidden; }
 
         body {
             background-color: var(--light-bg);
@@ -48,14 +46,8 @@
 
         /* AUTH CONTAINER */
         .auth-container {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 15px;
-            padding: 10px;
-            margin-bottom: 20px;
-            background: #fff;
-            border-radius: 12px;
+            display: flex; justify-content: flex-end; align-items: center; gap: 15px;
+            padding: 10px; margin-bottom: 20px; background: #fff; border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         #auth-status { font-size: 1rem; font-weight: 500; display: none; }
@@ -133,19 +125,18 @@
         @media (max-width: 600px) {
             body { 
                 padding: 0; 
-                background-color: #f0f4f8; /* Darker backdrop behind the white sheet */
+                background-color: #f0f4f8; 
             }
             .container {
                 margin-top: 10px;
-                background-color: #eff3f8; /* Google drawer background */
-                border-radius: 32px 32px 0 0; /* Google style top rounded corners */
+                background-color: #eff3f8; 
+                border-radius: 32px 32px 0 0; 
                 padding: 25px 20px 80px 20px;
                 min-height: calc(100vh - 10px);
                 box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
             }
-            .auth-container { margin: 15px; } /* Add margin since body padding is 0 */
+            .auth-container { margin: 15px; } 
             
-            /* Hide big old title, show elegant mobile header */
             h1.desktop-title { display: none; }
             .mobile-header { display: block; margin-bottom: 25px; }
             
@@ -153,8 +144,7 @@
             .mh-normal { display: flex; justify-content: space-between; align-items: center; }
             .mh-normal h2 { font-size: 1.4rem; font-weight: 500; color: var(--dark-text); }
             .pencil-btn {
-                background-color: var(--google-light-blue);
-                color: var(--dark-text);
+                background-color: var(--google-light-blue); color: var(--dark-text);
                 border: none; width: 44px; height: 44px; border-radius: 50%;
                 display: flex; align-items: center; justify-content: center;
                 cursor: pointer; transition: background 0.2s;
@@ -168,11 +158,8 @@
             .cancel-edit-btn { background: #f1f3f4; color: var(--dark-text); }
             .done-edit-btn { background: var(--google-blue); color: white; }
 
-            /* The Google App Drawer Grid */
-            .bookmark-grid {
-                grid-template-columns: repeat(3, 1fr); 
-                gap: 25px 10px;
-            }
+            /* Grid */
+            .bookmark-grid { grid-template-columns: repeat(3, 1fr); gap: 25px 10px; }
             .bookmark-card {
                 padding: 5px; border: none; box-shadow: none; background-color: transparent;
                 align-items: center; justify-content: flex-start; cursor: default;
@@ -187,26 +174,37 @@
                 background-color: #ffffff; border-radius: 50%; padding: 10px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1); object-fit: contain;
             }
-            /* Truncated small text */
-           /* Truncated small text - UPDATED FOR PERFECT CENTERING */
+            
+            /* ✨ Truncated Text with 2-Line Center Fix */
             .bookmark-title {
-                font-size: 0.8rem; /* Font thoda chota kiya taaki fit ho */
-                font-weight: 500; 
-                text-align: center; 
+                font-size: 0.8rem;
+                font-weight: 500;
+                text-align: center;
                 color: var(--dark-text) !important;
-                width: 100%; 
-                
-                /* ✨ MAGIC FIX: Allow max 2 lines and center strictly */
+                width: 100%;
                 white-space: normal; 
                 display: -webkit-box;
-                -webkit-line-clamp: 2; /* Max 2 lines ki permission */
+                -webkit-line-clamp: 2; /* 2 line me fit karega */
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                
                 line-height: 1.2;
-                margin-top: 5px; /* Icon aur text ke beech thodi space */
-                word-break: break-word; /* Agar word bahut bada ho toh tod kar neeche laye */
+                margin-top: 5px;
+                word-break: break-word;
             }
+            .bookmark-url, .bookmark-actions { display: none !important; }
+            .add-btn { bottom: 20px; right: 20px; width: 55px; height: 55px; font-size: 30px; }
+
+            /* Mobile Edit Mode Active state (Jiggle animation) */
+            .bookmark-grid.edit-mode-active .bookmark-card { cursor: grab; }
+            @keyframes jiggle {
+                0% { transform: rotate(-1.5deg); }
+                50% { transform: rotate(1.5deg); }
+                100% { transform: rotate(-1.5deg); }
+            }
+            .bookmark-grid.edit-mode-active .bookmark-card {
+                animation: jiggle 0.3s infinite ease-in-out;
+            }
+        }
 
         /* EMPTY STATE & NOTIFICATION */
         .empty-state { background: #ffffff; padding: 60px 20px; color: var(--light-text); border-radius: 12px; grid-column: 1 / -1; text-align: center; }
@@ -220,7 +218,7 @@
 
     <div class="auth-container">
         <div id="auth-status">Welcome, <span id="user-name"></span></div>
-        <button id="login-btn">Sign in</button>
+        <button id="login-btn">Sign in with Google</button>
         <button id="logout-btn">Logout</button>
     </div>
 
@@ -299,8 +297,9 @@
         let currentUserId = null;
         let bookmarksRef = null; 
         let firebaseDataListener = null; 
-        let isMobileEditMode = false; // Tracks if we are in Drag & Drop mode on mobile
+        let isMobileEditMode = false; 
 
+        // YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAaNxUWGa_x57I5IX8IVn8-uFBgDcVb6UM",
             authDomain: "bookmarks-8e531.firebaseapp.com",
@@ -349,13 +348,11 @@
             catch (e) { return ''; }
         }
 
-        // --- SORTABLE LOGIC WITH MOBILE TOGGLE ---
+        // --- SORTABLE LOGIC WITH SCROLL FIX ---
         function initSortable(bookmarksArray) {
             if (sortableInstance) sortableInstance.destroy();
             
-            // Check if user is on mobile
             const isMobile = window.innerWidth <= 600;
-            // Disable dragging if it's mobile AND we are not in edit mode
             const shouldDisable = isMobile && !isMobileEditMode;
 
             if (bookmarksArray.length > 0) {
@@ -363,7 +360,10 @@
                     animation: 150,
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
-                    disabled: shouldDisable, // The magic happens here!
+                    disabled: shouldDisable,
+                    delay: 200, 
+                    delayOnTouchOnly: true, 
+                    touchStartThreshold: 3, 
                     onEnd: function (evt) {
                         updateFirebaseOrder(evt.oldIndex, evt.newIndex, bookmarksArray);
                     }
@@ -387,7 +387,7 @@
             websiteName.value = name;
             websiteUrl.value = url;
             submitBtn.textContent = 'Update';
-            formDeleteBtn.style.display = 'block'; // Show delete button in form
+            formDeleteBtn.style.display = 'block'; 
             formContainer.style.display = 'block';
             addBtn.style.display = 'none';
             window.scrollTo(0,0);
@@ -424,28 +424,23 @@
                     // Smart Click Handler
                     bookmarkCard.addEventListener('click', function (e) {
                         const isMobile = window.innerWidth <= 600;
-                        
                         if (isMobile) {
                             if (isMobileEditMode) {
-                                // On Mobile Edit Mode: clicking opens the edit form
                                 e.preventDefault();
                                 openEditForm(bookmark.key, bookmark.name, bookmark.url);
                             } else {
-                                // On Mobile Normal Mode: open URL
                                 window.open(bookmark.url, '_blank');
                             }
                         } else {
-                            // Desktop behavior (buttons handle edit/delete)
                             if (e.target.tagName !== 'BUTTON') {
                                 window.open(bookmark.url, '_blank');
                             }
                         }
                     });
 
-                    // Desktop specific buttons
+                    // Desktop buttons
                     bookmarkCard.querySelector('.edit-btn').addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        openEditForm(bookmark.key, bookmark.name, bookmark.url);
+                        e.stopPropagation(); openEditForm(bookmark.key, bookmark.name, bookmark.url);
                     });
 
                     bookmarkCard.querySelector('.delete-btn').addEventListener('click', function (e) {
@@ -467,7 +462,6 @@
                 if (data) { for (let key in data) { bookmarks.push({ key, ...data[key] }); } }
                 bookmarks.sort((a, b) => (a.order || 9999) - (b.order || 9999));
                 
-                // Save current array globally so initSortable can use it during toggle
                 window.currentBookmarksArray = bookmarks; 
                 renderBookmarks(bookmarks);
             });
@@ -497,7 +491,6 @@
             setTimeout(() => { notification.style.display = 'none'; }, 2000);
         }
 
-        // Events
         loginBtn.addEventListener('click', signInWithGoogle);
         logoutBtn.addEventListener('click', logOut);
 
@@ -516,7 +509,6 @@
             if (currentUserId && !isMobileEditMode) addBtn.style.display = 'flex';
         });
 
-        // Delete from within the form (useful for mobile)
         formDeleteBtn.addEventListener('click', function() {
             if(confirm("Delete this website?")) {
                 deleteBookmark(bookmarkId.value);
@@ -541,7 +533,7 @@
             }
         });
 
-        // --- MOBILE EDIT MODE TOGGLE LOGIC ---
+        // --- MOBILE EDIT MODE TOGGLE ---
         function toggleEditMode(enable) {
             isMobileEditMode = enable;
             if (enable) {
@@ -555,17 +547,13 @@
                 if (currentUserId && formContainer.style.display !== 'block') addBtn.style.display = 'flex';
                 bookmarkGrid.classList.remove('edit-mode-active');
             }
-            // Re-initialize sortable to apply the disabled state change
-            if(window.currentBookmarksArray) {
-                initSortable(window.currentBookmarksArray);
-            }
+            if(window.currentBookmarksArray) initSortable(window.currentBookmarksArray);
         }
 
         mobileEditBtn.addEventListener('click', () => toggleEditMode(true));
         mobileCancelBtn.addEventListener('click', () => toggleEditMode(false));
         mobileDoneBtn.addEventListener('click', () => toggleEditMode(false));
 
-        // Listen for screen resize to reset sortable logic if moved between PC/Mobile
         window.addEventListener('resize', () => {
             if(window.currentBookmarksArray) initSortable(window.currentBookmarksArray);
         });
