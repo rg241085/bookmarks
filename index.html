@@ -188,27 +188,25 @@
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1); object-fit: contain;
             }
             /* Truncated small text */
+           /* Truncated small text - UPDATED FOR PERFECT CENTERING */
             .bookmark-title {
-                font-size: 0.85rem; font-weight: 400; text-align: center; color: var(--dark-text) !important;
-                width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
+                font-size: 0.8rem; /* Font thoda chota kiya taaki fit ho */
+                font-weight: 500; 
+                text-align: center; 
+                color: var(--dark-text) !important;
+                width: 100%; 
+                
+                /* ✨ MAGIC FIX: Allow max 2 lines and center strictly */
+                white-space: normal; 
+                display: -webkit-box;
+                -webkit-line-clamp: 2; /* Max 2 lines ki permission */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                
+                line-height: 1.2;
+                margin-top: 5px; /* Icon aur text ke beech thodi space */
+                word-break: break-word; /* Agar word bahut bada ho toh tod kar neeche laye */
             }
-            .bookmark-url, .bookmark-actions { display: none !important; }
-            .add-btn { bottom: 20px; right: 20px; width: 55px; height: 55px; font-size: 30px; }
-
-            /* Mobile Edit Mode Active state */
-            .bookmark-grid.edit-mode-active .bookmark-card {
-                cursor: grab;
-            }
-            /* Subtle jiggle animation to show they are draggable */
-            @keyframes jiggle {
-                0% { transform: rotate(-1.5deg); }
-                50% { transform: rotate(1.5deg); }
-                100% { transform: rotate(-1.5deg); }
-            }
-            .bookmark-grid.edit-mode-active .bookmark-card {
-                animation: jiggle 0.3s infinite ease-in-out;
-            }
-        }
 
         /* EMPTY STATE & NOTIFICATION */
         .empty-state { background: #ffffff; padding: 60px 20px; color: var(--light-text); border-radius: 12px; grid-column: 1 / -1; text-align: center; }
