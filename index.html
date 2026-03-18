@@ -12,28 +12,29 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <style>
         /* -------------------------------------- */
-        /* GLOBAL RESET AND FONT (Aapka Original) */
+        /* GLOBAL RESET AND FONT */
         /* -------------------------------------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
         :root {
             --whatsapp-green: #25d366;
             --light-bg: #f5f5f5;
-            --dark-text: #111b21;
+            --dark-text: #1f1f1f;
             --light-text: #667781;
-            --google-blue: #4285F4;
+            --google-blue: #0b57d0;
+            --google-light-blue: #d3e3fd;
+        }
+
+        /* 1. HORIZONTAL SCROLL FIX: Set max-width and hide overflow */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden; 
         }
 
         body {
             background-color: var(--light-bg);
-            min-height: 100%;
+            min-height: 100vh;
             padding: 40px 20px;
             color: var(--dark-text);
         }
@@ -45,6 +46,7 @@
             min-height: 85vh;
         }
 
+        /* AUTH CONTAINER */
         .auth-container {
             display: flex;
             justify-content: flex-end;
@@ -56,362 +58,192 @@
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-
-        #auth-status {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--dark-text);
-            display: none;
+        #auth-status { font-size: 1rem; font-weight: 500; display: none; }
+        #auth-status #user-name { color: var(--whatsapp-green); font-weight: 600; }
+        #login-btn, #logout-btn {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); transition: all 0.3s ease;
+            color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
         }
-
-        #auth-status #user-name {
-            color: var(--whatsapp-green);
-            font-weight: 600;
-        }
-
-        #login-btn,
-        #logout-btn {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        #login-btn { background: var(--google-blue); }
+        #login-btn { background: #4285F4; }
         #logout-btn { background: #dc3545; display: none; }
 
-        h1 {
-            text-align: center;
-            color: var(--dark-text);
-            margin-bottom: 50px;
-            font-size: 2.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            position: relative;
-            display: inline-block;
-            width: 100%;
+        /* DESKTOP TITLE */
+        h1.desktop-title {
+            text-align: center; color: var(--dark-text); margin-bottom: 50px; font-size: 2.8rem;
+            font-weight: 700; position: relative; display: block; width: 100%;
+        }
+        h1.desktop-title::after {
+            content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 5px; background: var(--whatsapp-green); border-radius: 3px;
         }
 
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 5px;
-            background: var(--whatsapp-green);
-            border-radius: 3px;
-        }
+        /* MOBILE HEADER (Hidden on Desktop) */
+        .mobile-header { display: none; }
 
+        /* FORM STYLES */
         .form-container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            border: 1px solid #e0e4e7;
-            display: none;
+            background: #ffffff; padding: 30px; border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1); margin-bottom: 30px; border: 1px solid #e0e4e7; display: none;
         }
-
         .form-group { margin-bottom: 20px; }
-
-        label {
-            display: block;
-            color: var(--light-text);
-            font-weight: 600;
-            margin-bottom: 8px;
+        label { display: block; color: var(--light-text); font-weight: 600; margin-bottom: 8px; }
+        input[type="text"], input[type="url"] {
+            width: 100%; padding: 14px; border: 1px solid #dcdcdc; border-radius: 8px; font-size: 16px;
+            background-color: #f8f9fa; color: var(--dark-text); transition: border-color 0.3s;
         }
-
-        input[type="text"],
-        input[type="url"] {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #dcdcdc;
-            border-radius: 8px;
-            font-size: 16px;
-            background-color: #f8f9fa;
-            color: var(--dark-text);
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus,
-        input[type="url"]:focus {
-            border-color: var(--whatsapp-green);
-            box-shadow: 0 0 0 1px var(--whatsapp-green);
-            outline: none;
-        }
-
-        .form-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        button {
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
+        input:focus { border-color: var(--whatsapp-green); box-shadow: 0 0 0 1px var(--whatsapp-green); outline: none; }
+        
+        .form-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .form-buttons button { color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s ease; }
         #submit-btn { background: var(--whatsapp-green); }
         .cancel-btn { background: var(--light-text); }
 
-        button:hover { transform: translateY(-1px); }
-        #submit-btn:hover, .cancel-btn:hover { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
-
         .add-btn {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            background: var(--whatsapp-green);
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5);
-            font-size: 35px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 100;
+            position: fixed; bottom: 40px; right: 40px; width: 65px; height: 65px; border-radius: 50%;
+            background: var(--whatsapp-green); box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5); font-size: 35px;
+            display: none; align-items: center; justify-content: center; color: white; z-index: 100; cursor: pointer; border: none;
         }
 
-        .add-btn:hover { transform: scale(1.05) rotate(90deg); }
-
         /* -------------------------------------- */
-        /* LAPTOP VIEW: BOOKMARK CARDS (Aapka Original) */
+        /* DESKTOP VIEW: BOOKMARK CARDS (Safe) */
         /* -------------------------------------- */
-        .bookmark-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            min-height: 200px;
-        }
-
+        .bookmark-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; min-height: 200px; }
         .bookmark-card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
-            transition: all 0.3s ease-in-out;
-            border: 1px solid #e0e4e7;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: grab;
+            background-color: #ffffff; border-radius: 12px; padding: 30px; border: 1px solid #e0e4e7;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.3s; display: flex; flex-direction: column; cursor: grab;
         }
-
-        .bookmark-card.sortable-chosen { opacity: 0.8; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+        .bookmark-card.sortable-chosen { opacity: 0.8; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .bookmark-card.sortable-ghost { opacity: 0.2; }
-
-        .bookmark-card:hover {
-            background-color: var(--whatsapp-green);
-            color: #ffffff;
-            transform: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-            border-color: var(--whatsapp-green);
-        }
-
+        .bookmark-card:hover { background-color: var(--whatsapp-green); border-color: var(--whatsapp-green); }
         .bookmark-card:hover .bookmark-title { color: #ffffff; }
-        .bookmark-card:hover .bookmark-url { color: rgba(255, 255, 255, 0.8); }
-        .bookmark-card:hover .edit-btn,
-        .bookmark-card:hover .delete-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .favicon {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            margin-right: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            flex-shrink: 0;
-            object-fit: contain;
-        }
-
-        .bookmark-title {
-            font-size: 1.5rem;
-            font-weight: 500;
-            margin: 0;
-            color: var(--dark-text);
-            transition: color 0.3s;
-            word-break: break-word;
-            text-transform: none;
-            line-height: 1.2;
-        }
-
-        .bookmark-url {
-            color: var(--light-text);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            word-break: break-all;
-            font-style: italic;
-            transition: color 0.3s;
-        }
-
-        .bookmark-actions {
-            margin-top: auto;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding-top: 10px;
-            z-index: 10;
-        }
-
-        .edit-btn,
-        .delete-btn {
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 6px;
-            box-shadow: none;
-            background-color: transparent;
-            border: 1px solid var(--whatsapp-green);
-            color: var(--whatsapp-green);
-            transition: all 0.3s;
-        }
+        .bookmark-card:hover .bookmark-url { color: rgba(255,255,255,0.8); }
+        .bookmark-card:hover .edit-btn, .bookmark-card:hover .delete-btn { background-color: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.4); }
+        
+        .card-header { display: flex; align-items: center; margin-bottom: 10px; }
+        .favicon { width: 24px; height: 24px; border-radius: 4px; margin-right: 12px; flex-shrink: 0; object-fit: contain; }
+        .bookmark-title { font-size: 1.5rem; font-weight: 500; margin: 0; color: var(--dark-text); transition: color 0.3s; word-break: break-word; line-height: 1.2; }
+        .bookmark-url { color: var(--light-text); font-size: 0.9rem; margin-bottom: 20px; font-style: italic; transition: color 0.3s; word-break: break-all; }
+        .bookmark-actions { margin-top: auto; display: flex; justify-content: flex-end; gap: 10px; padding-top: 10px; }
+        .edit-btn, .delete-btn { padding: 8px 12px; font-size: 14px; font-weight: 500; border-radius: 6px; background: transparent; border: 1px solid var(--whatsapp-green); color: var(--whatsapp-green); cursor: pointer; transition: all 0.3s; }
         .delete-btn { border-color: #dc3545; color: #dc3545; }
 
         /* -------------------------------------- */
-        /* ✨ NEW: MOBILE VIEW OVERRIDES (App Drawer Look) */
+        /* ✨ NEW: MOBILE VIEW OVERRIDES (App Drawer) */
         /* -------------------------------------- */
         @media (max-width: 600px) {
-            body { padding: 20px 10px; }
-            h1 { font-size: 2rem; margin-bottom: 30px; }
+            body { 
+                padding: 0; 
+                background-color: #f0f4f8; /* Darker backdrop behind the white sheet */
+            }
+            .container {
+                margin-top: 10px;
+                background-color: #eff3f8; /* Google drawer background */
+                border-radius: 32px 32px 0 0; /* Google style top rounded corners */
+                padding: 25px 20px 80px 20px;
+                min-height: calc(100vh - 10px);
+                box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            }
+            .auth-container { margin: 15px; } /* Add margin since body padding is 0 */
             
-            /* The Google App Drawer Background */
-            .bookmark-grid {
-                grid-template-columns: repeat(3, 1fr); /* 3 icons per row */
-                gap: 20px 10px;
-                background-color: #eff3f8; /* Very light blue/grey like Google */
-                padding: 30px 15px;
-                border-radius: 28px;
-            }
-
-            .bookmark-card {
-                padding: 10px 5px;
-                border: none;
-                box-shadow: none;
-                background-color: transparent;
-                align-items: center;
-                justify-content: flex-start;
-            }
-
-            /* Remove hover effects on mobile for cleaner look */
-            .bookmark-card:hover {
-                background-color: transparent;
+            /* Hide big old title, show elegant mobile header */
+            h1.desktop-title { display: none; }
+            .mobile-header { display: block; margin-bottom: 25px; }
+            
+            /* Normal Mode Header */
+            .mh-normal { display: flex; justify-content: space-between; align-items: center; }
+            .mh-normal h2 { font-size: 1.4rem; font-weight: 500; color: var(--dark-text); }
+            .pencil-btn {
+                background-color: var(--google-light-blue);
                 color: var(--dark-text);
-                box-shadow: none;
+                border: none; width: 44px; height: 44px; border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer; transition: background 0.2s;
             }
+            .pencil-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
-            .card-content {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
+            /* Edit Mode Header */
+            .mh-edit { display: none; justify-content: space-between; align-items: center; }
+            .mh-edit span { font-size: 1.1rem; font-weight: 500; color: var(--dark-text); }
+            .cancel-edit-btn, .done-edit-btn { border: none; padding: 10px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; font-size: 0.95rem; }
+            .cancel-edit-btn { background: #f1f3f4; color: var(--dark-text); }
+            .done-edit-btn { background: var(--google-blue); color: white; }
+
+            /* The Google App Drawer Grid */
+            .bookmark-grid {
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 25px 10px;
             }
-
-            .card-header {
-                flex-direction: column; /* Stack Icon on top of text */
-                margin-bottom: 0;
-                width: 100%;
+            .bookmark-card {
+                padding: 5px; border: none; box-shadow: none; background-color: transparent;
+                align-items: center; justify-content: flex-start; cursor: default;
             }
-
+            .bookmark-card:hover { background-color: transparent; color: var(--dark-text); }
+            .card-content { display: flex; flex-direction: column; align-items: center; width: 100%; }
+            .card-header { flex-direction: column; margin-bottom: 0; width: 100%; }
+            
+            /* Big circular icon */
             .favicon {
-                width: 48px; /* Large Icon */
-                height: 48px;
-                margin-right: 0;
-                margin-bottom: 8px;
-                background-color: #ffffff; /* White circle background */
-                border-radius: 50%; /* Circle shape */
-                padding: 8px;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                width: 56px; height: 56px; margin-right: 0; margin-bottom: 8px;
+                background-color: #ffffff; border-radius: 50%; padding: 10px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1); object-fit: contain;
             }
-
+            /* Truncated small text */
             .bookmark-title {
-                font-size: 0.85rem;
-                font-weight: 400;
-                text-align: center;
-                color: var(--dark-text) !important;
-                width: 100%;
-                /* These 3 lines make long text show as "..." */
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                font-size: 0.85rem; font-weight: 400; text-align: center; color: var(--dark-text) !important;
+                width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
             }
+            .bookmark-url, .bookmark-actions { display: none !important; }
+            .add-btn { bottom: 20px; right: 20px; width: 55px; height: 55px; font-size: 30px; }
 
-            /* Hide everything else for the clean App look */
-            .bookmark-url, 
-            .bookmark-actions {
-                display: none !important; 
+            /* Mobile Edit Mode Active state */
+            .bookmark-grid.edit-mode-active .bookmark-card {
+                cursor: grab;
             }
-
-            .add-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 55px;
-                height: 55px;
+            /* Subtle jiggle animation to show they are draggable */
+            @keyframes jiggle {
+                0% { transform: rotate(-1.5deg); }
+                50% { transform: rotate(1.5deg); }
+                100% { transform: rotate(-1.5deg); }
+            }
+            .bookmark-grid.edit-mode-active .bookmark-card {
+                animation: jiggle 0.3s infinite ease-in-out;
             }
         }
 
-        /* -------------------------------------- */
         /* EMPTY STATE & NOTIFICATION */
-        /* -------------------------------------- */
-        .empty-state {
-            background: #ffffff;
-            padding: 80px 20px;
-            color: var(--light-text);
-            font-size: 1.1rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e0e4e7;
-            grid-column: 1 / -1;
-            text-align: center;
-        }
-
-        .notification {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background-color: var(--whatsapp-green);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            display: none;
-            z-index: 1000;
-        }
-
+        .empty-state { background: #ffffff; padding: 60px 20px; color: var(--light-text); border-radius: 12px; grid-column: 1 / -1; text-align: center; }
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: var(--whatsapp-green); color: white; padding: 12px 24px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none; z-index: 1000; font-weight: 500; white-space: nowrap; }
         .notification.error { background-color: #dc3545; }
     </style>
 </head>
 
 <body>
+    <div id="notification" class="notification"></div>
+
+    <div class="auth-container">
+        <div id="auth-status">Welcome, <span id="user-name"></span></div>
+        <button id="login-btn">Sign in</button>
+        <button id="logout-btn">Logout</button>
+    </div>
+
     <div class="container">
+        <h1 class="desktop-title">My Favorite Websites</h1>
 
-        <div class="auth-container">
-            <div id="auth-status">Welcome, <span id="user-name"></span></div>
-            <button id="login-btn">Sign in with Google</button>
-            <button id="logout-btn">Logout</button>
+        <div class="mobile-header">
+            <div class="mh-normal" id="mh-normal">
+                <h2>Your favourites</h2>
+                <button class="pencil-btn" id="mobile-edit-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="mh-edit" id="mh-edit">
+                <button class="cancel-edit-btn" id="mobile-cancel-btn">Cancel</button>
+                <span>Drag and drop apps</span>
+                <button class="done-edit-btn" id="mobile-done-btn">Done</button>
+            </div>
         </div>
-
-        <h1>My Favorite Websites</h1>
 
         <div class="form-container" id="form-container">
             <form id="bookmark-form">
@@ -420,29 +252,24 @@
                     <label for="website-name">Website Name:</label>
                     <input type="text" id="website-name" placeholder="Example: Google" required>
                 </div>
-
                 <div class="form-group">
                     <label for="website-url">Website URL:</label>
                     <input type="url" id="website-url" placeholder="https://www.google.com" required>
                 </div>
-
                 <div class="form-buttons">
                     <button type="button" class="cancel-btn" id="cancel-btn">Cancel</button>
-                    <button type="submit" id="submit-btn">Save Website</button>
+                    <button type="submit" id="submit-btn">Save</button>
+                    <button type="button" id="form-delete-btn" style="background:#dc3545; display:none;">Delete</button>
                 </div>
             </form>
         </div>
 
         <div class="bookmark-grid" id="bookmark-grid">
-            <div class="empty-state" id="empty-state-message">
-                Loading bookmarks...
-            </div>
+            <div class="empty-state" id="empty-state-message">Loading bookmarks...</div>
         </div>
     </div>
 
     <button class="add-btn" id="add-btn">+</button>
-
-    <div id="notification" class="notification"></div>
 
     <script>
         const formContainer = document.getElementById('form-container');
@@ -452,6 +279,7 @@
         const websiteUrl = document.getElementById('website-url');
         const submitBtn = document.getElementById('submit-btn');
         const cancelBtn = document.getElementById('cancel-btn');
+        const formDeleteBtn = document.getElementById('form-delete-btn');
         const bookmarkGrid = document.getElementById('bookmark-grid');
         const addBtn = document.getElementById('add-btn');
         const notification = document.getElementById('notification');
@@ -462,20 +290,18 @@
         const authStatus = document.getElementById('auth-status');
         const userName = document.getElementById('user-name');
 
+        // Mobile UI Elements
+        const mhNormal = document.getElementById('mh-normal');
+        const mhEdit = document.getElementById('mh-edit');
+        const mobileEditBtn = document.getElementById('mobile-edit-btn');
+        const mobileCancelBtn = document.getElementById('mobile-cancel-btn');
+        const mobileDoneBtn = document.getElementById('mobile-done-btn');
+
         let sortableInstance = null;
         let currentUserId = null;
         let bookmarksRef = null; 
         let firebaseDataListener = null; 
-
-        const TEXT_SAVE_WEBSITE = 'Save Website';
-        const TEXT_UPDATE_WEBSITE = 'Update';
-        const TEXT_EDIT = 'Edit';
-        const TEXT_DELETE = 'Delete';
-        const TEXT_SUCCESS_SAVE = 'Website saved successfully!';
-        const TEXT_SUCCESS_UPDATE = 'Website updated successfully!';
-        const TEXT_SUCCESS_DELETE = 'Website deleted successfully!';
-        const TEXT_EMPTY_STATE = 'No websites saved yet. Click the plus button below to add a website.';
-        const TEXT_LOGGED_OUT_STATE = 'Please log in to see your bookmarks.'; 
+        let isMobileEditMode = false; // Tracks if we are in Drag & Drop mode on mobile
 
         const firebaseConfig = {
             apiKey: "AIzaSyAaNxUWGa_x57I5IX8IVn8-uFBgDcVb6UM",
@@ -491,68 +317,55 @@
         const database = firebase.database();
         const auth = firebase.auth();
 
-        // Security Fix
         function escapeHTML(str) {
-            let div = document.createElement('div');
-            div.innerText = str;
-            return div.innerHTML;
+            let div = document.createElement('div'); div.innerText = str; return div.innerHTML;
         }
 
         function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(error => console.error("Login failed:", error));
+            auth.signInWithPopup(provider).catch(e => console.error(e));
         }
 
-        function logOut() {
-            auth.signOut().catch(error => console.error("Logout failed:", error));
-        }
+        function logOut() { auth.signOut().catch(e => console.error(e)); }
 
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUserId = user.uid;
                 bookmarksRef = database.ref('users/' + currentUserId + '/bookmarks');
                 userName.textContent = user.displayName;
-                authStatus.style.display = 'block';
-                logoutBtn.style.display = 'block';
-                loginBtn.style.display = 'none';
-                addBtn.style.display = 'flex'; 
+                authStatus.style.display = 'block'; logoutBtn.style.display = 'block'; loginBtn.style.display = 'none';
+                if(!isMobileEditMode) addBtn.style.display = 'flex'; 
                 listenForData();
             } else {
                 currentUserId = null;
                 if (bookmarksRef && firebaseDataListener) bookmarksRef.off('value', firebaseDataListener);
                 bookmarksRef = null;
-                authStatus.style.display = 'none';
-                logoutBtn.style.display = 'none';
-                loginBtn.style.display = 'block';
-                addBtn.style.display = 'none'; 
-                formContainer.style.display = 'none'; 
+                authStatus.style.display = 'none'; logoutBtn.style.display = 'none'; loginBtn.style.display = 'block';
+                addBtn.style.display = 'none'; formContainer.style.display = 'none'; 
                 renderBookmarks([]); 
             }
         });
 
         function getFaviconUrl(url) {
-            try {
-                const domain = new URL(url).hostname;
-                return `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64`;
-            } catch (e) {
-                return '';
-            }
+            try { return `https://s2.googleusercontent.com/s2/favicons?domain=${new URL(url).hostname}&sz=128`; } 
+            catch (e) { return ''; }
         }
 
-       function initSortable(bookmarksArray) {
+        // --- SORTABLE LOGIC WITH MOBILE TOGGLE ---
+        function initSortable(bookmarksArray) {
             if (sortableInstance) sortableInstance.destroy();
             
+            // Check if user is on mobile
+            const isMobile = window.innerWidth <= 600;
+            // Disable dragging if it's mobile AND we are not in edit mode
+            const shouldDisable = isMobile && !isMobileEditMode;
+
             if (bookmarksArray.length > 0) {
                 sortableInstance = Sortable.create(bookmarkGrid, {
                     animation: 150,
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
-                    
-                    // ✨ SCROLLING FIX (Naya Code Yahan Hai) ✨
-                    delay: 200, // 200 milliseconds ka long-press delay
-                    delayOnTouchOnly: true, // Yeh delay sirf mobile/touch screens par lagega, laptop mouse par nahi
-                    touchStartThreshold: 3, // Agar ungli thodi si slide ho jaye toh usko scroll manega, drag nahi
-                    
+                    disabled: shouldDisable, // The magic happens here!
                     onEnd: function (evt) {
                         updateFirebaseOrder(evt.oldIndex, evt.newIndex, bookmarksArray);
                     }
@@ -568,16 +381,26 @@
 
             const updates = {};
             tempBookmarks.forEach((b, index) => { updates[b.key + '/order'] = index; });
-            bookmarksRef.update(updates).catch(error => console.error("Error updating order:", error));
+            bookmarksRef.update(updates);
+        }
+
+        function openEditForm(key, name, url) {
+            bookmarkId.value = key;
+            websiteName.value = name;
+            websiteUrl.value = url;
+            submitBtn.textContent = 'Update';
+            formDeleteBtn.style.display = 'block'; // Show delete button in form
+            formContainer.style.display = 'block';
+            addBtn.style.display = 'none';
+            window.scrollTo(0,0);
         }
 
         function renderBookmarks(bookmarksArray) {
             bookmarkGrid.innerHTML = '';
-
             if (bookmarksArray.length === 0) {
                 const emptyStateDiv = document.createElement('div');
                 emptyStateDiv.className = 'empty-state';
-                emptyStateDiv.textContent = currentUserId ? TEXT_EMPTY_STATE : TEXT_LOGGED_OUT_STATE;
+                emptyStateDiv.textContent = currentUserId ? "No websites saved. Click + to add." : "Please log in to see bookmarks.";
                 bookmarkGrid.appendChild(emptyStateDiv);
             } else {
                 bookmarksArray.forEach(bookmark => {
@@ -586,36 +409,45 @@
                     bookmarkCard.className = 'bookmark-card';
                     bookmarkCard.setAttribute('data-id', bookmark.key);
 
-                    // Reconstructed with escapeHTML and fallback icon
                     bookmarkCard.innerHTML = `
                         <div class="card-content">
                             <div class="card-header">
-                                <img src="${escapeHTML(faviconUrl)}" onerror="this.src='https://via.placeholder.com/64/eff3f8/4285F4?text=🌐'" alt="Favicon" class="favicon">
+                                <img src="${escapeHTML(faviconUrl)}" onerror="this.src='https://via.placeholder.com/128/eff3f8/0b57d0?text=🌐'" alt="Favicon" class="favicon">
                                 <div class="bookmark-title">${escapeHTML(bookmark.name)}</div>
                             </div>
                             <div class="bookmark-url">${escapeHTML(bookmark.url)}</div>
                             <div class="bookmark-actions">
-                                <button class="edit-btn">${TEXT_EDIT}</button>
-                                <button class="delete-btn">${TEXT_DELETE}</button>
+                                <button class="edit-btn">Edit</button>
+                                <button class="delete-btn">Delete</button>
                             </div>
                         </div>
                     `;
 
+                    // Smart Click Handler
                     bookmarkCard.addEventListener('click', function (e) {
-                        if (e.target.tagName !== 'BUTTON') {
-                            window.open(bookmark.url, '_blank');
+                        const isMobile = window.innerWidth <= 600;
+                        
+                        if (isMobile) {
+                            if (isMobileEditMode) {
+                                // On Mobile Edit Mode: clicking opens the edit form
+                                e.preventDefault();
+                                openEditForm(bookmark.key, bookmark.name, bookmark.url);
+                            } else {
+                                // On Mobile Normal Mode: open URL
+                                window.open(bookmark.url, '_blank');
+                            }
+                        } else {
+                            // Desktop behavior (buttons handle edit/delete)
+                            if (e.target.tagName !== 'BUTTON') {
+                                window.open(bookmark.url, '_blank');
+                            }
                         }
                     });
 
+                    // Desktop specific buttons
                     bookmarkCard.querySelector('.edit-btn').addEventListener('click', function (e) {
                         e.stopPropagation();
-                        bookmarkId.value = bookmark.key;
-                        websiteName.value = bookmark.name;
-                        websiteUrl.value = bookmark.url;
-                        submitBtn.textContent = TEXT_UPDATE_WEBSITE;
-                        formContainer.style.display = 'block';
-                        addBtn.style.display = 'none';
-                        window.scrollTo(0,0);
+                        openEditForm(bookmark.key, bookmark.name, bookmark.url);
                     });
 
                     bookmarkCard.querySelector('.delete-btn').addEventListener('click', function (e) {
@@ -634,12 +466,11 @@
             firebaseDataListener = bookmarksRef.on('value', (snapshot) => {
                 const bookmarks = [];
                 const data = snapshot.val();
-                if (data) {
-                    for (let key in data) {
-                        bookmarks.push({ key, ...data[key] });
-                    }
-                }
+                if (data) { for (let key in data) { bookmarks.push({ key, ...data[key] }); } }
                 bookmarks.sort((a, b) => (a.order || 9999) - (b.order || 9999));
+                
+                // Save current array globally so initSortable can use it during toggle
+                window.currentBookmarksArray = bookmarks; 
                 renderBookmarks(bookmarks);
             });
         }
@@ -647,32 +478,28 @@
         function addBookmark(name, url) {
             if (!bookmarksRef) return; 
             bookmarksRef.once('value').then(snapshot => {
-                const count = snapshot.numChildren();
-                bookmarksRef.push({ name, url, order: count })
-                    .then(() => showNotification(TEXT_SUCCESS_SAVE, 'success'));
+                bookmarksRef.push({ name, url, order: snapshot.numChildren() })
+                    .then(() => showNotification("Website saved!", 'success'));
             });
         }
-
         function updateBookmark(key, name, url) {
             if (!bookmarksRef) return; 
-            bookmarksRef.child(key).update({ name, url })
-                .then(() => showNotification(TEXT_SUCCESS_UPDATE, 'success'));
+            bookmarksRef.child(key).update({ name, url }).then(() => showNotification("Website updated!", 'success'));
         }
-
         function deleteBookmark(key) {
             if (!bookmarksRef) return; 
-            bookmarksRef.child(key).remove()
-                .then(() => showNotification(TEXT_SUCCESS_DELETE, 'success'));
+            bookmarksRef.child(key).remove().then(() => showNotification("Deleted!", 'success'));
         }
 
         function showNotification(message, type = 'success') {
             notification.textContent = message;
-            notification.classList.remove('error');
+            notification.className = 'notification';
             if (type === 'error') notification.classList.add('error');
             notification.style.display = 'block';
-            setTimeout(() => { notification.style.display = 'none'; }, 3000);
+            setTimeout(() => { notification.style.display = 'none'; }, 2000);
         }
 
+        // Events
         loginBtn.addEventListener('click', signInWithGoogle);
         logoutBtn.addEventListener('click', logOut);
 
@@ -681,39 +508,70 @@
             addBtn.style.display = 'none';
             bookmarkForm.reset();
             bookmarkId.value = '';
-            submitBtn.textContent = TEXT_SAVE_WEBSITE;
+            submitBtn.textContent = 'Save';
+            formDeleteBtn.style.display = 'none';
             window.scrollTo(0,0);
         });
 
         cancelBtn.addEventListener('click', function () {
             formContainer.style.display = 'none';
-            if (currentUserId) addBtn.style.display = 'flex';
+            if (currentUserId && !isMobileEditMode) addBtn.style.display = 'flex';
+        });
+
+        // Delete from within the form (useful for mobile)
+        formDeleteBtn.addEventListener('click', function() {
+            if(confirm("Delete this website?")) {
+                deleteBookmark(bookmarkId.value);
+                formContainer.style.display = 'none';
+                if (currentUserId && !isMobileEditMode) addBtn.style.display = 'flex';
+            }
         });
 
         bookmarkForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            if (!currentUserId || !bookmarksRef) {
-                showNotification("Please log in to save bookmarks.", 'error');
-                return;
-            }
+            if (!currentUserId || !bookmarksRef) return;
 
             const name = websiteName.value.trim();
             let url = websiteUrl.value.trim();
             const key = bookmarkId.value;
 
             if (name && url) {
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
-                if (key) {
-                    updateBookmark(key, name, url);
-                } else {
-                    addBookmark(name, url);
-                }
+                if (!url.startsWith('http')) url = 'https://' + url;
+                if (key) updateBookmark(key, name, url); else addBookmark(name, url);
                 formContainer.style.display = 'none';
-                addBtn.style.display = 'flex';
+                if(!isMobileEditMode) addBtn.style.display = 'flex';
             }
         });
+
+        // --- MOBILE EDIT MODE TOGGLE LOGIC ---
+        function toggleEditMode(enable) {
+            isMobileEditMode = enable;
+            if (enable) {
+                mhNormal.style.display = 'none';
+                mhEdit.style.display = 'flex';
+                addBtn.style.display = 'none';
+                bookmarkGrid.classList.add('edit-mode-active');
+            } else {
+                mhNormal.style.display = 'flex';
+                mhEdit.style.display = 'none';
+                if (currentUserId && formContainer.style.display !== 'block') addBtn.style.display = 'flex';
+                bookmarkGrid.classList.remove('edit-mode-active');
+            }
+            // Re-initialize sortable to apply the disabled state change
+            if(window.currentBookmarksArray) {
+                initSortable(window.currentBookmarksArray);
+            }
+        }
+
+        mobileEditBtn.addEventListener('click', () => toggleEditMode(true));
+        mobileCancelBtn.addEventListener('click', () => toggleEditMode(false));
+        mobileDoneBtn.addEventListener('click', () => toggleEditMode(false));
+
+        // Listen for screen resize to reset sortable logic if moved between PC/Mobile
+        window.addEventListener('resize', () => {
+            if(window.currentBookmarksArray) initSortable(window.currentBookmarksArray);
+        });
+
     </script>
 </body>
 </html>
