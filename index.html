@@ -25,22 +25,10 @@
             --google-light-blue: #d3e3fd;
         }
 
-        /* HORIZONTAL SCROLL FIX */
         html, body { max-width: 100vw; overflow-x: hidden; }
 
-        body {
-            background-color: var(--light-bg);
-            min-height: 100vh;
-            padding: 40px 20px;
-            color: var(--dark-text);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            min-height: 85vh;
-        }
+        body { background-color: var(--light-bg); min-height: 100vh; padding: 40px 20px; color: var(--dark-text); }
+        .container { max-width: 1200px; margin: 0 auto; position: relative; min-height: 85vh; }
 
         /* AUTH CONTAINER */
         .auth-container {
@@ -67,7 +55,6 @@
             width: 150px; height: 5px; background: var(--whatsapp-green); border-radius: 3px;
         }
 
-        /* MOBILE HEADER (Hidden on Desktop) */
         .mobile-header { display: none; }
 
         /* FORM STYLES */
@@ -95,7 +82,7 @@
         }
 
         /* -------------------------------------- */
-        /* DESKTOP VIEW: BOOKMARK CARDS */
+        /* DESKTOP VIEW */
         /* -------------------------------------- */
         .bookmark-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; min-height: 200px; }
         .bookmark-card {
@@ -121,17 +108,10 @@
         /* ✨ MOBILE VIEW OVERRIDES (App Drawer) */
         /* -------------------------------------- */
         @media (max-width: 600px) {
-            body { 
-                padding: 0; 
-                background-color: #f0f4f8; 
-            }
+            body { padding: 0; background-color: #f0f4f8; }
             .container {
-                margin-top: 10px;
-                background-color: #eff3f8; 
-                border-radius: 32px 32px 0 0; 
-                padding: 25px 20px 80px 20px;
-                min-height: calc(100vh - 10px);
-                box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+                margin-top: 10px; background-color: #eff3f8; border-radius: 32px 32px 0 0; 
+                padding: 25px 20px 80px 20px; min-height: calc(100vh - 10px); box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
             }
             .auth-container { margin: 15px; } 
             
@@ -143,8 +123,7 @@
             .pencil-btn {
                 background-color: var(--google-light-blue); color: var(--dark-text);
                 border: none; width: 44px; height: 44px; border-radius: 50%;
-                display: flex; align-items: center; justify-content: center;
-                cursor: pointer; transition: background 0.2s;
+                display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;
             }
             .pencil-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
@@ -155,32 +134,28 @@
             .done-edit-btn { background: var(--google-blue); color: white; }
 
             .bookmark-grid { grid-template-columns: repeat(3, 1fr); gap: 25px 10px; }
-            .bookmark-card {
-                padding: 5px; border: none; box-shadow: none; background-color: transparent;
-                align-items: center; justify-content: flex-start; cursor: default;
-            }
+            .bookmark-card { padding: 5px; border: none; box-shadow: none; background-color: transparent; align-items: center; justify-content: flex-start; cursor: default; }
             .bookmark-card:hover { background-color: transparent; color: var(--dark-text); }
             .card-content { display: flex; flex-direction: column; align-items: center; width: 100%; }
             .card-header { flex-direction: column; margin-bottom: 0; width: 100%; }
             
             .favicon {
                 width: 56px; height: 56px; margin-right: 0; margin-bottom: 8px;
-                background-color: #ffffff; border-radius: 50%; padding: 10px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1); object-fit: contain;
+                background-color: #ffffff; border-radius: 50%; padding: 8px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.08); object-fit: contain;
             }
             
+            /* ✨ Text Centering Fix: Pure CSS block guarantee */
             .bookmark-title {
                 font-size: 0.8rem;
                 font-weight: 500;
-                text-align: center;
+                text-align: center !important;
                 color: var(--dark-text) !important;
                 width: 100%;
-                white-space: normal; 
-                display: -webkit-box;
-                -webkit-line-clamp: 2; 
-                -webkit-box-orient: vertical;
-                overflow: hidden;
+                display: block;
+                max-height: 2.4em; /* Allows exactly 2 lines */
                 line-height: 1.2;
+                overflow: hidden;
                 margin-top: 5px;
                 word-break: break-word;
             }
@@ -188,11 +163,7 @@
             .add-btn { bottom: 20px; right: 20px; width: 55px; height: 55px; font-size: 30px; }
 
             .bookmark-grid.edit-mode-active .bookmark-card { cursor: grab; }
-            @keyframes jiggle {
-                0% { transform: rotate(-1.5deg); }
-                50% { transform: rotate(1.5deg); }
-                100% { transform: rotate(-1.5deg); }
-            }
+            @keyframes jiggle { 0% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } 100% { transform: rotate(-1.5deg); } }
             .bookmark-grid.edit-mode-active .bookmark-card { animation: jiggle 0.3s infinite ease-in-out; }
         }
 
@@ -292,6 +263,7 @@
         let firebaseDataListener = null; 
         let isMobileEditMode = false; 
 
+        // YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAaNxUWGa_x57I5IX8IVn8-uFBgDcVb6UM",
             authDomain: "bookmarks-8e531.firebaseapp.com",
@@ -308,6 +280,37 @@
 
         function escapeHTML(str) {
             let div = document.createElement('div'); div.innerText = str; return div.innerHTML;
+        }
+
+        // ✨ NEW: Beautiful SVG Avatar Generator for missing icons
+        function generateAvatar(name) {
+            const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#8E24AA', '#00ACC1', '#F4511E', '#E91E63', '#3F51B5'];
+            const char = name ? name.trim().charAt(0).toUpperCase() : '?';
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+            const color = colors[hash % colors.length];
+            
+            // Creates a perfect colored circle with a white letter
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="${color}"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="48" font-weight="600">${char}</text></svg>`;
+            return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+        }
+
+        // ✨ NEW: Smart Favicon Selector
+        function getFaviconUrl(url, name) {
+            try { 
+                const domain = new URL(url).hostname;
+                // Domains that usually don't have good root favicons (Netlify, Github, etc.)
+                const genericHosts = ['netlify.app', 'github.io', 'vercel.app', 'herokuapp.com'];
+                
+                // If it's a generic host, instantly use the colorful Name Avatar!
+                if (genericHosts.some(h => domain.includes(h))) {
+                    return generateAvatar(name);
+                }
+                
+                // Otherwise, get the high-res favicon from Google (for SBI, Google, Dryfu, etc.)
+                return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`;
+            } 
+            catch (e) { return generateAvatar(name); }
         }
 
         function signInWithGoogle() {
@@ -334,11 +337,6 @@
                 renderBookmarks([]); 
             }
         });
-
-        function getFaviconUrl(url) {
-            try { return `https://s2.googleusercontent.com/s2/favicons?domain=${new URL(url).hostname}&sz=128`; } 
-            catch (e) { return ''; }
-        }
 
         function initSortable(bookmarksArray) {
             if (sortableInstance) sortableInstance.destroy();
@@ -389,16 +387,16 @@
                 bookmarkGrid.appendChild(emptyStateDiv);
             } else {
                 bookmarksArray.forEach(bookmark => {
-                    const faviconUrl = getFaviconUrl(bookmark.url);
+                    // Changed to new Smart Favicon logic
+                    const faviconUrl = getFaviconUrl(bookmark.url, bookmark.name);
                     const bookmarkCard = document.createElement('div');
                     bookmarkCard.className = 'bookmark-card';
                     bookmarkCard.setAttribute('data-id', bookmark.key);
 
-                    // ⚡ FASTER LOAD: Added loading="lazy" and decoding="async"
                     bookmarkCard.innerHTML = `
                         <div class="card-content">
                             <div class="card-header">
-                                <img src="${escapeHTML(faviconUrl)}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/128/eff3f8/0b57d0?text=🌐'" alt="Favicon" class="favicon">
+                                <img src="${escapeHTML(faviconUrl)}" loading="lazy" decoding="async" alt="Favicon" class="favicon">
                                 <div class="bookmark-title">${escapeHTML(bookmark.name)}</div>
                             </div>
                             <div class="bookmark-url">${escapeHTML(bookmark.url)}</div>
