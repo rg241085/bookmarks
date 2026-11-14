@@ -272,12 +272,20 @@ svg { flex-shrink: 0; }
     border-radius: 14px;
     flex-shrink: 0;
     display: grid; place-items: center;
-    background: var(--c);
-    color: #fff;
-    font-weight: 700;
+    /* Letter icon: halka rangeen background + gehra letter (logo wale safed icons ke saath mel khaata hai) */
+    background: linear-gradient(145deg,
+        color-mix(in srgb, var(--c) 10%, var(--surface)),
+        color-mix(in srgb, var(--c) 22%, var(--surface)));
+    color: var(--c);
+    border: 1px solid color-mix(in srgb, var(--c) 18%, var(--border));
+    font-weight: 800;
     font-size: 1.3rem;
     overflow: hidden;
 }
+@media (prefers-color-scheme: dark) {
+    .tile-icon { color: color-mix(in srgb, var(--c) 55%, #fff); }
+}
+.tile-icon.has-img { background: #fff; border-color: var(--border); }
 .tile-icon img {
     position: absolute;
     inset: 0;
@@ -520,22 +528,34 @@ svg { flex-shrink: 0; }
     .top-actions { margin-left: auto; }
     .search { order: 3; flex-basis: 100%; max-width: none; }
     .main { padding: 18px 16px 130px; }
-    .hero { margin-bottom: 20px; align-items: center; }
-    .hero h1 { font-size: 1.3rem; }
-    .hero p { font-size: .9rem; }
-    #arrangeBtn { height: 38px; padding: 0 14px; }
+    .hero { margin-bottom: 14px; align-items: center; gap: 12px; }
+    .hero > div { min-width: 0; }
+    .hero h1 { font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hero p { font-size: .85rem; margin-top: 2px; }
+    #arrangeBtn { width: 42px; height: 42px; padding: 0; border-radius: 14px; }
+    #arrangeBtn span { display: none; }
 
-    .grid { grid-template-columns: repeat(4, 1fr); gap: 22px 6px; }
+    /* Phone ke app-drawer jaisa panel */
+    .grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px 4px;
+        padding: 20px 8px 22px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        box-shadow: var(--shadow-sm);
+    }
+    .grid:empty { display: none; }
     .tile { background: none; border: none; box-shadow: none; }
     .tile:hover { transform: none; box-shadow: none; }
     .tile-link { flex-direction: column; gap: 8px; padding: 4px 2px; text-align: center; }
     .tile-icon {
-        width: 60px; height: 60px;
+        width: 56px; height: 56px;
         border-radius: 18px;
-        font-size: 1.5rem;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, .1);
+        font-size: 1.4rem;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, .07);
     }
-    .tile-icon img { padding: 13px; }
+    .tile-icon img { padding: 12px; }
     .tile-text { width: 100%; padding-right: 0; }
     .tile-name {
         font-size: .74rem;
@@ -563,6 +583,6 @@ svg { flex-shrink: 0; }
     .sheet-handle { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--border); margin: 0 auto 14px; }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 330px) {
     .grid { grid-template-columns: repeat(3, 1fr); }
 }

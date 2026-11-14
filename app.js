@@ -84,7 +84,8 @@ function colorFor(text) {
 function faviconUrl(url) {
   const host = hostOf(url);
   if (!host || isGeneric(host)) return null; // github.io jaise sites par rangeen letter icon
-  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent("https://" + host)}&size=128`;
+  // fallback_opts nahi diya: logo na mile to Google ka grey globe nahi, error aayega -> letter icon
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=${encodeURIComponent("https://" + host)}&size=128`;
 }
 
 function iconHtml(name, url, extra = "") {
@@ -95,10 +96,19 @@ function iconHtml(name, url, extra = "") {
   </div>`;
 }
 
-// Favicon load na ho to letter wala icon dikhe
+// Favicon load na ho, ya bahut chhota/dhundhla ho, to letter wala icon dikhe
 document.addEventListener("error", (e) => {
   if (e.target?.matches?.(".tile-icon img")) e.target.remove();
 }, true);
+document.addEventListener("load", (e) => {
+  const img = e.target;
+  if (!img?.matches?.(".tile-icon img")) return;
+  if (img.naturalWidth < 24) img.remove();
+  else img.parentElement.classList.add("has-img");
+}, true);
+
+// "sbi" -> "Sbi" (sirf dikhane ke liye)
+const displayName = (s) => { const a = Array.from(s || ""); return a.length ? a[0].toUpperCase() + a.slice(1).join("") : ""; };
 
 function toast(msg, { type = "info", action, onAction, duration } = {}) {
   const el = document.createElement("div");
@@ -160,7 +170,7 @@ function tileHtml(item) {
     <a class="tile-link" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" title="${esc(item.name)}">
       ${iconHtml(item.name, item.url)}
       <div class="tile-text">
-        <div class="tile-name">${esc(item.name)}</div>
+        <div class="tile-name">${esc(displayName(item.name))}</div>
         <div class="tile-domain">${esc(hostOf(item.url))}</div>
       </div>
     </a>
