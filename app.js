@@ -84,8 +84,7 @@ function colorFor(text) {
 function faviconUrl(url) {
   const host = hostOf(url);
   if (!host || isGeneric(host)) return null; // github.io jaise sites par rangeen letter icon
-  // fallback_opts nahi diya: logo na mile to Google ka grey globe nahi, error aayega -> letter icon
-  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=${encodeURIComponent("https://" + host)}&size=128`;
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${host}&size=128`;
 }
 
 function iconHtml(name, url, extra = "") {
@@ -103,7 +102,7 @@ document.addEventListener("error", (e) => {
 document.addEventListener("load", (e) => {
   const img = e.target;
   if (!img?.matches?.(".tile-icon img")) return;
-  if (img.naturalWidth < 24) img.remove();
+  if (img.naturalWidth < 16) img.remove();
   else img.parentElement.classList.add("has-img");
 }, true);
 
